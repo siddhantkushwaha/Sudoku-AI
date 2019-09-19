@@ -27,4 +27,6 @@ def clean(image):
         new_image = crop_and_warp(image, corners)
         new_image = cv.resize(new_image, (512, 512))
 
-        return new_image
+        return new_image, corners
+
+    return None, None
