@@ -10,9 +10,12 @@ def clean(image):
 
     # Find intersections between the lines to determine if the intersections are grid joints.
     contours, _ = cv.findContours(mask, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE)
+
+    # if a exists, it has to be the biggest polygon
+    contours = sorted(contours, key=cv.contourArea, reverse=True)
+
     intersections = cv.bitwise_and(h, v)
 
-    sudoku_images = []
     for grid_number, contour in enumerate(contours):
 
         # verify that Region of Interest (ROI) is a table
@@ -22,7 +25,6 @@ def clean(image):
 
         corners = find_corners_from_contour(contour)
         new_image = crop_and_warp(image, corners)
+        new_image = cv.resize(new_image, (512, 512))
 
-        sudoku_images.append(new_image)
-
-    return sudoku_images
+        return new_image
