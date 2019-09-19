@@ -7,7 +7,7 @@ from extract import extract
 from predict import Predictor
 
 if __name__ == '__main__':
-    path = 'data/train/image10.jpg'
+    path = 'data/train/image1000.jpg'
     image = cv.cvtColor(cv.imread(path), cv.COLOR_BGR2RGB)
     plt.imshow(image)
     plt.show()
