@@ -4,11 +4,6 @@ from clean_v2 import clean
 from cv_utils import get_grid_mask
 
 
-def process(frame, ref_mask):
-    cleaned, _corners = clean(frame, ref_mask)
-    return _corners
-
-
 def main():
     cap = cv.VideoCapture(0)
 
@@ -19,7 +14,7 @@ def main():
 
         ret, frame = cap.read()
 
-        corners = process(frame, ref_mask)
+        _, corners = clean(frame, ref_mask)
         if corners is not None:
             cv.rectangle(img=frame, pt1=(corners[0][0], corners[0][1]),
                          pt2=(corners[2][0], corners[2][1]), color=(0, 255, 0),
