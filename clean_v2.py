@@ -7,6 +7,17 @@ import cv2 as cv
 from cv_utils import get_grid_mask, find_corners_from_contour, crop_and_warp, verify_grid
 
 
+def find_similarity(mask, ref_mask):
+    score = 0
+    for i in range(ref_mask.shape[0]):
+        for j in range(ref_mask.shape[0]):
+            if ref_mask[i][j] == 255.0:
+                region = mask[i - 8:i + 8, j - 8:j + 8]
+                if np.sum(region) > 0:
+                    score += 1
+    return score
+
+
 def clean(image, ref_mask, cutoff=0.85):
     d = np.argwhere(ref_mask == 255.0).shape[0]
 
@@ -33,27 +44,19 @@ def clean(image, ref_mask, cutoff=0.85):
 
         new_mask, _, _ = get_grid_mask(new_image)
 
-        n = 0
-        for i in range(512):
-            for j in range(512):
-                if ref_mask[i][j] == 255.0:
-                    region = new_mask[i - 8:i + 8, j - 8:j + 8]
-                    if np.sum(region) > 0:
-                        n += 1
-
+        n = find_similarity(new_mask, ref_mask)
         if n / d > cutoff:
             return new_image, corners
 
     return None, None
 
 
-if __name__ == '__main__':
-
+def main():
     ref_sudoku = cv.imread('data/ref_sudoku.jpg')
     ref_mask, _, _ = get_grid_mask(ref_sudoku)
 
     for path in os.listdir('data/train'):
-        if not '.jpg' in path:
+        if '.jpg' not in path:
             continue
 
         fpath = f'data/train/{path}'
@@ -64,3 +67,7 @@ if __name__ == '__main__':
 
         if sudoku is not None:
             cv.imwrite(f'out/{path}', sudoku)
+
+
+if __name__ == '__main__':
+    main()
