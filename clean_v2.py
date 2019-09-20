@@ -7,7 +7,7 @@ import cv2 as cv
 from cv_utils import get_grid_mask, find_corners_from_contour, crop_and_warp, verify_grid
 
 
-def clean(image, ref_mask, cutoff=0.5):
+def clean(image, ref_mask, cutoff=0.85):
     d = np.argwhere(ref_mask == 255.0).shape[0]
 
     mask, h, v = get_grid_mask(image)
@@ -20,7 +20,6 @@ def clean(image, ref_mask, cutoff=0.5):
 
     intersections = cv.bitwise_and(h, v)
 
-    count = 0
     for grid_number, contour in enumerate(contours):
 
         # verify that Region of Interest (ROI) is a table
@@ -34,13 +33,18 @@ def clean(image, ref_mask, cutoff=0.5):
 
         new_mask, _, _ = get_grid_mask(new_image)
 
-        diff = np.bitwise_and(new_mask, ref_mask)
-        n = np.argwhere(diff == 255.0).shape[0]
+        n = 0
+        for i in range(512):
+            for j in range(512):
+                if ref_mask[i][j] == 255.0:
+                    region = new_mask[i - 8:i + 8, j - 8:j + 8]
+                    if np.sum(region) > 0:
+                        n += 1
 
         if n / d > cutoff:
-            count += 1
+            return new_image, corners
 
-    return count
+    return None, None
 
 
 if __name__ == '__main__':
@@ -56,17 +60,10 @@ if __name__ == '__main__':
             continue
 
         fpath = f'data/train/{path}'
+        print(fpath)
 
-        ic += 1
         image = cv.imread(fpath)
+        sudoku = clean(image, ref_mask)
 
-        res = clean(image, ref_mask, cutoff=0.43)
-
-        if res != 1:
-            print(fpath, res)
-
-        sc += res
-
-        # print(fpath, res)
-
-    print(ic, sc)
+        if sudoku is not None:
+            cv.imwrite(f'out/{path}', sudoku)
