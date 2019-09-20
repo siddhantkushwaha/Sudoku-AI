@@ -7,20 +7,16 @@ import cv2 as cv
 from cv_utils import get_grid_mask, find_corners_from_contour, crop_and_warp, verify_grid
 
 
-def find_similarity(mask, ref_mask):
+def find_similarity(mask, ref_idx):
     score = 0
-    for i in range(ref_mask.shape[0]):
-        for j in range(ref_mask.shape[0]):
-            if ref_mask[i][j] == 255.0:
-                region = mask[i - 8:i + 8, j - 8:j + 8]
-                if np.sum(region) > 0:
-                    score += 1
+    for i, j in ref_idx:
+        region = mask[i - 8:i + 8, j - 8: j + 8]
+        if np.sum(region) > 0:
+            score += 1
     return score
 
 
-def clean(image, ref_mask, cutoff=0.85):
-    d = np.argwhere(ref_mask == 255.0).shape[0]
-
+def clean(image, ref_idx, cutoff=0.85):
     mask, h, v = get_grid_mask(image)
 
     # Find intersections between the lines to determine if the intersections are grid joints.
@@ -44,8 +40,8 @@ def clean(image, ref_mask, cutoff=0.85):
 
         new_mask, _, _ = get_grid_mask(new_image)
 
-        n = find_similarity(new_mask, ref_mask)
-        if n / d > cutoff:
+        n = find_similarity(new_mask, ref_idx)
+        if n / ref_idx.shape[0] > cutoff:
             return new_image, corners
 
     return None, None
@@ -54,6 +50,7 @@ def clean(image, ref_mask, cutoff=0.85):
 def main():
     ref_sudoku = cv.imread('data/ref_sudoku.jpg')
     ref_mask, _, _ = get_grid_mask(ref_sudoku)
+    ref_idx = np.argwhere(ref_mask == 255.0)
 
     for path in os.listdir('data/train'):
         if '.jpg' not in path:
@@ -63,7 +60,7 @@ def main():
         print(fpath)
 
         image = cv.imread(fpath)
-        sudoku, _ = clean(image, ref_mask)
+        sudoku, _ = clean(image, ref_idx)
 
         if sudoku is not None:
             cv.imwrite(f'out/{path}', sudoku)

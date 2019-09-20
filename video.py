@@ -1,3 +1,4 @@
+import numpy as np
 import cv2 as cv
 
 from clean_v2 import clean
@@ -9,12 +10,13 @@ def main():
 
     ref_sudoku = cv.imread('data/ref_sudoku.jpg')
     ref_mask, _, _ = get_grid_mask(ref_sudoku)
+    ref_idx = np.argwhere(ref_mask == 255.0)
 
     while True:
 
         ret, frame = cap.read()
 
-        _, corners = clean(frame, ref_mask)
+        _, corners = clean(frame, ref_idx)
         if corners is not None:
             cv.rectangle(img=frame, pt1=(corners[0][0], corners[0][1]),
                          pt2=(corners[2][0], corners[2][1]), color=(0, 255, 0),
