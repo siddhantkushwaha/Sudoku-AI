@@ -49,9 +49,6 @@ def clean(image, ref_mask, cutoff=0.85):
 
 if __name__ == '__main__':
 
-    ic = 0
-    sc = 0
-
     ref_sudoku = cv.imread('data/ref_sudoku.jpg')
     ref_mask, _, _ = get_grid_mask(ref_sudoku)
 
@@ -63,7 +60,7 @@ if __name__ == '__main__':
         print(fpath)
 
         image = cv.imread(fpath)
-        sudoku = clean(image, ref_mask)
+        sudoku, _ = clean(image, ref_mask)
 
         if sudoku is not None:
             cv.imwrite(f'out/{path}', sudoku)

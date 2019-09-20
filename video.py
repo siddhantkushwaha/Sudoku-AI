@@ -1,8 +1,12 @@
 import cv2 as cv
 
-from clean import clean
+from clean_v2 import clean
+from cv_utils import get_grid_mask
 
 if __name__ == '__main__':
+
+    ref_sudoku = cv.imread('data/ref_sudoku.jpg')
+    ref_mask, _, _ = get_grid_mask(ref_sudoku)
 
     k = 1
     cap = cv.VideoCapture(0)
@@ -11,7 +15,7 @@ if __name__ == '__main__':
 
         ret, frame = cap.read()
 
-        cleaned, corners = clean(frame)
+        cleaned, corners = clean(frame, ref_mask)
         if cleaned is not None:
             print(k, cleaned.shape, corners)
 
@@ -24,6 +28,8 @@ if __name__ == '__main__':
 
             cv.putText(img=frame, text='BR', color=(0, 0, 255), org=(corners[2][0], corners[2][1]),
                        fontFace=cv.FONT_HERSHEY_PLAIN, fontScale=1)
+
+            cv.imwrite('out/out.jpg', frame)
 
             k += 1
 
